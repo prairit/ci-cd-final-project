@@ -5,7 +5,7 @@ from flask import jsonify, url_for, abort
 from service import app
 from service.common import status
 
-COUNTER = {}
+C = {}
 
 
 ############################################################
@@ -40,8 +40,7 @@ def list_counters():
     """Lists all counters"""
     app.logger.info("Request to list all counters...")
 
-    counters = 
-        [dict(name=count[0],counter=count[1]) for count in COUNTER.items()]
+    counters=[dict(name=count[0],counter=count[1]) for count in C.items()]
 
     return jsonify(counters)
 
@@ -54,12 +53,12 @@ def create_counters(name):
     """Creates a new counter"""
     app.logger.info("Request to Create counter: %s...", name)
 
-    if name in COUNTER:
+    if name in C:
         return abort(
                 status.HTTP_409_CONFLICT,
                 f"Counter {name} already exists")
 
-    COUNTER[name] = 0
+    C[name] = 0
 
     location_url = url_for("read_counters", name=name, _external=True)
     return (
@@ -77,12 +76,12 @@ def read_counters(name):
     """Reads a single counter"""
     app.logger.info("Request to Read counter: %s...", name)
 
-    if name not in COUNTER:
+    if name not in C:
         return abort(
             status.HTTP_404_NOT_FOUND,
             f"Counter {name} does not exist")
 
-    counter = COUNTER[name]
+    counter = C[name]
     return jsonify(name=name, counter=counter)
 
 
@@ -94,14 +93,14 @@ def update_counters(name):
     """Updates a counter"""
     app.logger.info("Request to Update counter: %s...", name)
 
-    if name not in COUNTER:
+    if name not in C:
         return abort(
             status.HTTP_404_NOT_FOUND,
             f"Counter {name} does not exist")
 
-    COUNTER[name] += 1
+    C[name] += 1
 
-    counter = COUNTER[name]
+    counter = C[name]
     return jsonify(name=name, counter=counter)
 
 
@@ -113,8 +112,8 @@ def delete_counters(name):
     """Deletes a counter"""
     app.logger.info("Request to Delete counter: %s...", name)
 
-    if name in COUNTER:
-        COUNTER.pop(name)
+    if name in C:
+        C.pop(name)
 
     return "", status.HTTP_204_NO_CONTENT
 
@@ -124,6 +123,6 @@ def delete_counters(name):
 ############################################################
 def reset_counters():
     """Removes all counters while testing"""
-    global COUNTER  # pylint: disable=global-statement
+    global C  # pylint: disable=global-statement
     if app.testing:
-        COUNTER = {}
+        C = {}
